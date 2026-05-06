@@ -1,5 +1,9 @@
+from database import obtener_conexion
+import psycopg2.extras
+
 class Contacto():
-    def __init__(self, nombre, telefono, email, direccion):
+    def __init__(self, id, nombre, telefono, email, direccion):
+        self.id = id
         self.nombre = nombre
         self.telefono = telefono
         self.email = email
@@ -10,23 +14,55 @@ class Contacto():
 
 class Agenda:
     def __init__(self):
-        self.contactos = []
-    
+           pass
     def agregar_contactos(self, nombre, telefono, email, direccion):
-        nuevo_contacto = Contacto(nombre, telefono, email, direccion)
-        self.contactos.append(nuevo_contacto)
+        conexion = obtener_conexion()
+        cursor = conexion.cursor()
+        query = "INSERT INTO contactos (nombre, telefono, email, direccion) VALUES (%s, %s, %s, %s)"
+        values = (nombre, telefono, email, direccion)
+        try:
+            cursor.execute(query, values)
+            conexion.commit()
+            return True
+        except Exception as e:
+            print("No se pudo realizar la peticion", e)
+            return False
+        finally:
+            conexion.close()
         
     def buscar_contactos(self, nombre):
-        resultado = []
-        for contacto in self.contactos:
-            if nombre == contacto.nombre.lower():
-                resultado.append(contacto)
-        if not resultado:
-            print("No se encontro el contacto")
-        return resultado
+        contactos = []
+        conexion = obtener_conexion()
+        cursor = conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        query = "SELECT * FROM contactos WHERE LOWER(nombre) = LOWER(%s)"
+        values = (nombre,)
+        try:
+            cursor.execute(query, values)
+            resultados = cursor.fetchall()
+            for contacto in resultados:
+                nuevo_contacto = Contacto(contacto["id"], contacto["nombre"], contacto["telefono"], contacto["email"], contacto["direccion"])
+                contactos.append(nuevo_contacto)
+            return contactos
+        except Exception as e:
+            print("Error", e)
+            return
+        finally:
+            conexion.close()
     
     def eliminar(self, eleccion):
-        self.contactos.remove(eleccion)
+        conexion = obtener_conexion()
+        cursor = conexion.cursor()
+        query = "DELETE FROM contactos WHERE ID = %s"
+        values = (eleccion,)
+        try:
+            cursor.execute(query, values)
+            conexion.commit()
+            return True
+        except Exception as e:
+            print("ERROR!", e)
+            return False
+        finally:
+            conexion.close()
 
 def eliminar_contacto():
     opciones = "si", "no"
@@ -45,7 +81,7 @@ def eliminar_contacto():
     eleccion = resultado[respuesta - 1]
     print("El contacto a eliminar es el siguiente?")
     print(eleccion)
-    respuesta2 = input("Ingrese la respuesta").lower()
+    respuesta2 = input("Ingrese la respuesta SI/NO").lower()
     if respuesta2 not in opciones:
         print("No ingresaste una respuesta valida!")
         return
@@ -53,7 +89,9 @@ def eliminar_contacto():
         print("Opcion cancelada")
         return
     if respuesta2 == "si":
-        mi_agenda.eliminar(eleccion)
+        mi_agenda.eliminar(eleccion.id)
+        print("Usuario eliminado con exito!")
+        return
 
 def recibir_contacto():
     nombre = input("Escriba el nombre del contacto").lower()
