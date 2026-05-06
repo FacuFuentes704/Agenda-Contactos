@@ -64,6 +64,22 @@ class Agenda:
         finally:
             conexion.close()
 
+    def listar_contactos(self):
+        contactos = []
+        conexion = obtener_conexion()
+        cursor = conexion.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        query = "SELECT * FROM contactos"
+        try:
+            cursor.execute(query)
+            resultado = cursor.fetchall()
+            for contacto in resultado:
+                nuevo_contacto = Contacto(contacto["id"], contacto["nombre"], contacto["telefono"], contacto["email"], contacto["direccion"])
+                contactos.append(nuevo_contacto)
+            return contactos
+        except Exception as e:
+            print("Error!", e)
+            return
+
 def eliminar_contacto():
     opciones = "si", "no"
     nombre = recibir_contacto()
@@ -140,20 +156,26 @@ def validar_datos():
     else:
         mi_agenda.agregar_contactos(*resultado)
 
+def listar():
+    resultado = mi_agenda.listar_contactos()
+    for indice, contacto in enumerate(resultado, start=1):
+        print(indice, contacto)
+
 mi_agenda = Agenda()
 
 def mostrar_menu():
     print("Opcion 1: Agregar usuario")
     print("Opcion 2: Buscar usuario")
     print("Opcion 3: Eliminar usuario")
-    print("Opcion 4: Modificar usuario")
+    print("Opcion 4: Listar usuarios")
     print("Opcion 5: Salir")
 
 
 def menu():
     opciones = {1: validar_datos,
               2: buscar,
-              3: eliminar_contacto
+              3: eliminar_contacto,
+              4: listar
         }
     while True:
         mostrar_menu()
