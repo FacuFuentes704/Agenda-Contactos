@@ -71,6 +71,9 @@ def eliminar_contacto():
         print("Resultados Incompletos")
         return
     resultado = mi_agenda.buscar_contactos(nombre)
+    if not resultado:
+        print("El nombre no se encuentra en la base de datos!")
+        return
     for indice, contacto in enumerate(resultado, start=1):
         print(indice, contacto)
     try:
@@ -78,20 +81,24 @@ def eliminar_contacto():
     except ValueError:
         print("Respuesta invalida")
         return
+    if respuesta < 1 or respuesta > len(resultado):
+        print("Indice incorrecto!")
+        return
     eleccion = resultado[respuesta - 1]
     print("El contacto a eliminar es el siguiente?")
     print(eleccion)
-    respuesta2 = input("Ingrese la respuesta SI/NO").lower()
-    if respuesta2 not in opciones:
-        print("No ingresaste una respuesta valida!")
-        return
-    if respuesta2 == "no":
-        print("Opcion cancelada")
-        return
-    if respuesta2 == "si":
-        mi_agenda.eliminar(eleccion.id)
-        print("Usuario eliminado con exito!")
-        return
+    while True:
+        respuesta2 = input("Ingrese la respuesta SI/NO").lower()
+        if respuesta2 not in opciones:
+            print("No ingresaste una respuesta valida!")
+            continue
+        if respuesta2 == "no":
+            print("Opcion cancelada")
+            break
+        if respuesta2 == "si":
+            mi_agenda.eliminar(eleccion.id)
+            print("Usuario eliminado con exito!")
+            return
 
 def recibir_contacto():
     nombre = input("Escriba el nombre del contacto").lower()
