@@ -193,8 +193,8 @@ def menu():
             print("Opcion invalida!")
             continue
 
-menu()
-        
+if __name__ == "__main__":
+    menu()
 
     
         
