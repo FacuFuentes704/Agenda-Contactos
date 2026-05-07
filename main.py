@@ -15,8 +15,14 @@ def listar_contactos():
 
 @app.post("/contactos", response_model=ContactoResponse)
 def agregar_contacto(contacto: ContactoCreate):
-    mi_agenda.agregar_contactos(contacto.nombre, contacto.telefono, contacto.email, contacto.direccion)
-    return contacto
+    resultado = mi_agenda.agregar_contactos(contacto.nombre, contacto.telefono, contacto.email, contacto.direccion)
+    if resultado == "Duplicado":
+        raise HTTPException(status_code=409, detail="Contacto duplicado")
+    elif resultado is False:
+        raise HTTPException(status_code=500, detail="Error en el servidor")
+    else:
+        return contacto
+    
 
 @app.get("/contactos/{nombre}", response_model=list[ContactoResponse])
 def buscar_contactos(nombre: str):

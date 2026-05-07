@@ -1,5 +1,6 @@
 from database import obtener_conexion
 import psycopg2.extras
+from psycopg2 import errors as psycopg2_errors
 
 class Contacto():
     def __init__(self, id, nombre, telefono, email, direccion):
@@ -24,6 +25,8 @@ class Agenda:
             cursor.execute(query, values)
             conexion.commit()
             return True
+        except psycopg2_errors.UniqueViolation:
+            return "Duplicado"
         except Exception as e:
             print("No se pudo realizar la peticion", e)
             return False
