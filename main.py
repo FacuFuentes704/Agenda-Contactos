@@ -17,3 +17,14 @@ def listar_contactos():
 def agregar_contacto(contacto: ContactoCreate):
     mi_agenda.agregar_contactos(contacto.nombre, contacto.telefono, contacto.email, contacto.direccion)
     return contacto
+
+@app.get("/contactos/{nombre}", response_model=list[ContactoResponse])
+def buscar_contactos(nombre: str):
+    resultado = mi_agenda.buscar_contactos(nombre)
+    return resultado
+
+@app.delete("/contactos/{id}")
+def eliminar(id: int):
+    mi_agenda.eliminar(id)
+    return {"mensaje": "Contacto eliminado correctamente"}
+
