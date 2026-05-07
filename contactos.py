@@ -42,7 +42,10 @@ class Agenda:
             for contacto in resultados:
                 nuevo_contacto = Contacto(contacto["id"], contacto["nombre"], contacto["telefono"], contacto["email"], contacto["direccion"])
                 contactos.append(nuevo_contacto)
-            return contactos
+            if not contactos:
+                return []
+            else:
+                return contactos
         except Exception as e:
             print("Error", e)
             return
@@ -56,6 +59,9 @@ class Agenda:
         values = (eleccion,)
         try:
             cursor.execute(query, values)
+            if cursor.rowcount == 0:
+                print("No se pudo modificar la db, ID incorrecto")
+                return False
             conexion.commit()
             return True
         except Exception as e:

@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from contactos import Agenda, mi_agenda
 from schemas import ContactoCreate, ContactoResponse
 
@@ -21,10 +21,16 @@ def agregar_contacto(contacto: ContactoCreate):
 @app.get("/contactos/{nombre}", response_model=list[ContactoResponse])
 def buscar_contactos(nombre: str):
     resultado = mi_agenda.buscar_contactos(nombre)
-    return resultado
+    if not resultado:
+        raise HTTPException(status_code=404, detail="Contacto no encontrado")
+    else:
+        return resultado
 
 @app.delete("/contactos/{id}")
 def eliminar(id: int):
-    mi_agenda.eliminar(id)
-    return {"mensaje": "Contacto eliminado correctamente"}
+    resultado = mi_agenda.eliminar(id)
+    if resultado is False:
+        raise HTTPException(status_code=404, detail="Contacto no encontrado")
+    else:
+        return{"mensaje": "Contacto eliminado con exito"}
 
